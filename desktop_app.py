@@ -46,10 +46,15 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-# The one shared path helper (stdlib-only, no import cycle). `app` is always
-# importable here: its directory (the repo root) is on sys.path[0] as a script,
-# and on sys.path inside the embeddable-Python runtime once it runs from the
-# project folder.
+# Put the project root (this file's own directory, which holds the `app`
+# package) on sys.path BEFORE importing app. A normal Python auto-prepends the
+# script's directory, but the Windows embeddable Python uses a ._pth file that
+# does NOT — so without this the very first `import app` dies with
+# "ModuleNotFoundError: No module named 'app'". This is a no-op under a normal
+# dev Python (the directory is already there). Must run before any `from app…`.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# The one shared path helper (stdlib-only, no import cycle).
 from app.paths import PACKAGED_ENV_FLAG, resource_base
 
 

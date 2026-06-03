@@ -60,9 +60,12 @@ echo(
 REM --- 1. Enable site-packages in the embeddable interpreter -----------------
 REM Embeddable Python ships with 'import site' disabled and no site-packages on
 REM the path, so pip-installed packages won't import until we re-enable them.
-REM Rewrite the ._pth deterministically (safe to repeat).
+REM We also add '..' (the project root, parent of runtime\) so the bundled
+REM `app` package imports - the embeddable interpreter does NOT auto-add the
+REM script's directory. Rewrite the ._pth deterministically (safe to repeat).
 > "%PTHFILE%" echo python311.zip
 >>"%PTHFILE%" echo .
+>>"%PTHFILE%" echo ..
 >>"%PTHFILE%" echo Lib\site-packages
 >>"%PTHFILE%" echo import site
 
