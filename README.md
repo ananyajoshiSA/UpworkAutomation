@@ -62,4 +62,4 @@ You only need **one**. You'll need a key (a secret password) from that service �
 
 Running from source and the zero-touch runtime design are documented in **[DEVELOPER.md](DEVELOPER.md)**. End users never need any of it.
 
-> **Downloaded this repo from GitHub?** It's **source only** — the bundled Python (`runtime/`) isn't in git, so it won't run as-is. Either get the packaged **`UpworkProposalStrategist.zip`**, or stage the runtime first: on **Windows** double-click `scripts\prepare_bundle.bat`, on **Mac/Linux** run `bash scripts/prepare_bundle.sh`. End users/clients should always receive the **zip**, not the GitHub download.
+> **Downloaded this repo from GitHub?** It runs directly — the bundled Python is included in the download. Just double-click **`Start Upwork Proposal Strategist`**; the first run installs the libraries, so it needs internet that one time. (The packaged **`UpworkProposalStrategist.zip`** is the same thing, pre-cleaned for handing to a non-technical client.)

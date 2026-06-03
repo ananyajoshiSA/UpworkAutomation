@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # ===========================================================================
-#  prepare_bundle.sh - stage the bundled Windows runtime before zipping.
+#  prepare_bundle.sh - (re)create the bundled Windows runtime in runtime/.
 #
-#  Run this ONCE on your Mac/Linux box before you zip the folder to send to a
-#  client. It places an embeddable Windows Python (and get-pip.py) into
-#  runtime/, so the shipped folder carries Python with it. The client therefore
-#  NEVER downloads an interpreter (the part antivirus/SmartScreen flags) - their
-#  first run only pip-installs the libraries from PyPI (internet needed once).
+#  You normally DON'T need this: runtime/ (the embeddable Windows Python +
+#  get-pip.py) is committed to the repo, so a fresh checkout already has it. Use
+#  this only to rebuild a deleted/corrupted runtime, or to bump the pinned Python
+#  version (edit PYVER, delete runtime/, then re-run).
 #
-#  runtime/ is git-ignored, so this is not committed; re-run it on a fresh
-#  checkout. The downloaded files are Windows binaries - we only stage them
-#  here, never execute them on macOS/Linux.
+#  It downloads + unzips the embeddable Windows Python and get-pip.py into
+#  runtime/. The files are Windows binaries - we only stage them here, never
+#  execute them on macOS/Linux. The client never downloads an interpreter (the
+#  part antivirus/SmartScreen flags); their first run only pip-installs the
+#  libraries from PyPI (internet needed once).
 #
 #  Requirements: curl and unzip (both ship with macOS).
 #  Usage:        bash scripts/prepare_bundle.sh

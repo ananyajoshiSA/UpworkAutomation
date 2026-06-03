@@ -14,9 +14,13 @@ logs/
 *.sqlite
 .DS_Store
 
-# Self-contained desktop runtime, created on first launch (embeddable Python +
-# installed deps). Never committed — the zero-touch bootstrap rebuilds it.
-runtime/
+# The bundled Python lives in runtime/ and IS committed, so a git download runs
+# directly (no separate staging step). Only the per-machine, first-run-generated
+# bits are kept out of git:
+runtime/Lib/
+runtime/Scripts/
+runtime/.deps_installed
+runtime/python-embed.zip
 
 # Packaging / build outputs
 build/

@@ -3,8 +3,8 @@ setlocal EnableExtensions
 REM ===========================================================================
 REM  ensure_runtime.bat - first-run setup for the browser desktop app.
 REM
-REM  Python is BUNDLED inside this folder (runtime\python.exe), staged by
-REM  scripts\prepare_bundle.sh before the folder is zipped. So this step does
+REM  Python is BUNDLED inside this folder (runtime\python.exe) - it is committed
+REM  to the repo and shipped in the zip. So this step does
 REM  NOT download an interpreter - it only:
 REM    1. enables site-packages in the embeddable interpreter (._pth),
 REM    2. installs pip (from the bundled get-pip.py) if needed,
@@ -33,7 +33,7 @@ set "PYEXE=%RT%\python.exe"
 set "REQ=%ROOT%\requirements.txt"
 
 REM Embeddable build is pinned to 3.11 - keep PTHFILE (python<major><minor>._pth)
-REM in step with the Python staged by prepare_bundle.sh.
+REM in step with the committed embeddable Python.
 set "PTHFILE=%RT%\python311._pth"
 set "GETPIP=%RT%\get-pip.py"
 
@@ -93,13 +93,12 @@ echo(
 echo [setup] ********************************************************
 echo [setup]  THE APP'S RUNTIME FILES ARE MISSING (runtime\python.exe).
 echo(
-echo [setup]  - If you opened this as a ZIP: it was not fully unzipped,
-echo [setup]    or antivirus removed files. Re-extract the WHOLE folder
-echo [setup]    ("Extract All"), allow it in antivirus, then launch again.
+echo [setup]  Python ships inside this folder, so this means the folder was
+echo [setup]  not fully unzipped, or antivirus removed files. Re-download /
+echo [setup]  re-extract the WHOLE folder ("Extract All"), allow it in your
+echo [setup]  antivirus, then launch again.
 echo(
-echo [setup]  - If you downloaded the SOURCE from GitHub: that download has
-echo [setup]    no bundled Python. Double-click  scripts\prepare_bundle.bat
-echo [setup]    once to fetch it, then launch again.
+echo [setup]  (Advanced: re-create the runtime with scripts\prepare_bundle.bat.)
 echo [setup] ********************************************************
 popd
 exit /b 1

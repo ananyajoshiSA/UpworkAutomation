@@ -13,8 +13,9 @@ The goal: a non-technical Windows user double-clicks **one** thing and the app
 opens in their **web browser**, with **nothing pre-installed** — no Python,
 conda, pip, PYTHONPATH, or env vars, ever.
 
-Python travels *inside* the folder (staged by `scripts\prepare_bundle.sh` before
-you zip), so the client never downloads an interpreter — only the app's
+Python travels *inside* the folder — `runtime\` (the embeddable Python) is
+**committed to the repo**, so every checkout, "Download ZIP", and packaged zip
+already has it. The client never downloads an interpreter — only the app's
 libraries, from PyPI, on the first run.
 
 ```
@@ -64,9 +65,10 @@ it's the lightest way to get "nothing pre-installed." The one quirk it requires 
 enabling `site` / `Lib\site-packages` via the `._pth` file so pip-installed
 packages import — is handled deterministically in `ensure_runtime.bat`.
 
-`scripts\prepare_bundle.sh` stages this interpreter into `runtime\` from your Mac
-(it just downloads and unzips the Windows build and `get-pip.py`; nothing is
-executed on macOS).
+This interpreter is **committed** under `runtime\`. It was created by
+`scripts\prepare_bundle.sh` (which just downloads + unzips the Windows build and
+`get-pip.py` on your Mac; nothing is executed on macOS) — re-run that only to
+rebuild or bump it.
 
 > Internet is needed on the **first** run only, to fetch the dependency wheels
 > from PyPI. Python itself is bundled. See [Offline / air-gapped
@@ -79,8 +81,8 @@ executed on macOS).
 | `app/paths.py` | The ONE path helper. `resource_base()` (bundled resources, MEIPASS-aware), `state_dir()`/`user_state_dir()` (writable `%APPDATA%`), `is_packaged()`/`is_frozen()`. |
 | `app/config.py` | Derives `PROJECT_ROOT`, `STATE_DIR`, `ENV_PATH`, `LOG_DIR` from `app.paths`. |
 | `desktop_app.py` | The launcher: free port, in-process headless Streamlit, health-gated browser open, foreground serve. Sets `UPS_PACKAGED=1`. |
-| `scripts\prepare_bundle.sh` | Dev/**macOS/Linux**: stage the embeddable Python + `get-pip.py` into `runtime\` before zipping. |
-| `scripts\prepare_bundle.bat` | Dev/**Windows**: same, for running a repo clone directly on Windows (downloads via PowerShell). |
+| `scripts\prepare_bundle.sh` | Dev/**macOS/Linux**: (re)create `runtime\` (embeddable Python + `get-pip.py`). Rarely needed — `runtime\` is committed. |
+| `scripts\prepare_bundle.bat` | Dev/**Windows**: same, to rebuild a deleted runtime (downloads via PowerShell). |
 | `scripts\ensure_runtime.bat` | First-run: enable site-packages, install pip, pip-install the libraries. |
 | `scripts\run.bat` | Set `UPS_PACKAGED=1`, ensure runtime, then run in the foreground (normal or `debug`). |
 | `Start Upwork Proposal Strategist.bat` | Primary launcher (opens the browser; the console is the run indicator). |
@@ -145,18 +147,23 @@ Re-run it after any change.
 `Start Upwork Proposal Strategist`. Their first run installs the libraries from
 PyPI (internet needed once), then the app opens in their browser.
 
-> Lower-level helper: `scripts/prepare_bundle.sh` only stages `runtime\` (the
-> bundled Python + `get-pip.py`) — `package.sh` calls it for you. `runtime\` is
-> git-ignored, so it is re-staged on a fresh checkout.
+> **The GitHub repo runs directly.** `runtime\` (the bundled Python) is
+> **committed**, so a `git clone` / "Download ZIP" already has `python.exe` —
+> double-click `Start Upwork Proposal Strategist` and it works (the first run
+> installs the libraries from PyPI; internet needed once). Only the first-run
+> *output* (`runtime\Lib`, `runtime\Scripts`, the `.deps_installed` marker) is
+> git-ignored.
 
-> ⚠️ **The GitHub repo is source-only and is NOT directly runnable.** `runtime\`
-> (the bundled Python) is git-ignored, so a `git clone` / "Download ZIP" has no
-> `python.exe`, and the launcher reports *"runtime files are missing"*. To run
-> from a repo checkout, stage the runtime first: **macOS/Linux** →
-> `bash scripts/prepare_bundle.sh`; **Windows** → double-click
-> `scripts\prepare_bundle.bat`. **End users/clients must always receive the
-> packaged `UpworkProposalStrategist.zip`** (it contains `runtime\`), never the
-> GitHub download.
+> Helper: `scripts/prepare_bundle.sh` (macOS/Linux) and `scripts/prepare_bundle.bat`
+> (Windows) (re)create `runtime\` from the pinned embeddable Python + `get-pip.py`.
+> You normally don't need them — the runtime is committed. Use them only to rebuild
+> a deleted/corrupted runtime or to bump the Python version. `package.sh` also calls
+> the `.sh` one (it's a no-op when the runtime is already present).
+
+> **Client vs repo:** both run, but the packaged `UpworkProposalStrategist.zip`
+> (from `package.sh`) is the cleaner hand-off for a non-technical client — it
+> strips `tests/`, `.git`, and dev files and gives a tidy folder name. The raw
+> GitHub download works too; it just also carries the dev files.
 
 To give it a real icon, create a Windows shortcut to
 `Start Upwork Proposal Strategist.bat`, set its icon to `build_assets\app.ico`,
@@ -188,8 +195,8 @@ internet even on the first run):
    Windows wheels), ship the `wheelhouse\` folder, and change the install line in
    `scripts\ensure_runtime.bat` to:
    `"%PYEXE%" -m pip install --no-index --find-links "%ROOT%\wheelhouse" -r "%REQ%"`
-2. Python and `get-pip.py` are already staged by `scripts\prepare_bundle.sh`, so
-   nothing else is needed.
+2. Python and `get-pip.py` are already committed under `runtime\`, so nothing
+   else is needed.
 
 ---
 

@@ -1,14 +1,15 @@
 @echo off
 setlocal EnableExtensions
 REM ===========================================================================
-REM  prepare_bundle.bat - stage the bundled Python on a WINDOWS machine.
+REM  prepare_bundle.bat - (re)create the bundled Python in runtime\ on Windows.
 REM
-REM  Use this ONLY if you got the project as SOURCE (a GitHub clone / Download
-REM  ZIP), which does not include runtime\ (it is git-ignored). It downloads an
-REM  embeddable Python + get-pip.py into runtime\, so the launcher can then run.
+REM  You normally DON'T need this: runtime\ (the embeddable Python + get-pip.py)
+REM  is committed to the repo, so a GitHub clone / Download ZIP and the packaged
+REM  UpworkProposalStrategist.zip both already contain it.
 REM
-REM  You do NOT need this if you received the packaged zip
-REM  (UpworkProposalStrategist.zip) - that already contains runtime\.
+REM  Use this only to rebuild a deleted/corrupted runtime (e.g. antivirus removed
+REM  python.exe), or to bump the Python version. It downloads an embeddable
+REM  Python + get-pip.py into runtime\.
 REM
 REM  Needs internet. Windows equivalent of scripts/prepare_bundle.sh.
 REM  Usage: double-click this file, or run it from a terminal.
