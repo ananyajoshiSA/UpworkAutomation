@@ -346,6 +346,11 @@ The **Proposal** page writes your proposal draft, using only facts from your fil
 
 - Close the app. Then open **File Explorer**, click the address bar at the top, type `%APPDATA%\UpworkProposalStrategist` and press **Enter** — it opens the app's private folder. Delete that folder (this removes your saved key and logs). Open the app again to set up fresh.
 
+### Uninstall the app completely
+
+- Close the app, then double-click **`Uninstall Upwork Proposal Strategist`** in the app folder. Type **YES** and press **Enter**.
+- It removes your saved key + logs, the firewall allowance, any Desktop shortcut, **and** the whole app folder — a clean, complete removal with nothing left behind.
+
 ---
 
 ## Safe Practices

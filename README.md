@@ -58,6 +58,12 @@ You only need **one**. You'll need a key (a secret password) from that service â
 
 ---
 
+## Uninstall
+
+Double-click **`Uninstall Upwork Proposal Strategist`**, type **YES**, and press Enter. It cleanly removes your saved settings + API key, the firewall allowance, any Desktop shortcut, and the whole app folder â€” nothing is left behind (the app adds no registry entries and nothing to Program Files).
+
+---
+
 ## For developers / packagers
 
 Running from source and the zero-touch runtime design are documented in **[DEVELOPER.md](DEVELOPER.md)**. End users never need any of it.
