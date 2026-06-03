@@ -61,3 +61,5 @@ You only need **one**. You'll need a key (a secret password) from that service â
 ## For developers / packagers
 
 Running from source and the zero-touch runtime design are documented in **[DEVELOPER.md](DEVELOPER.md)**. End users never need any of it.
+
+> **Downloaded this repo from GitHub?** It's **source only** â€” the bundled Python (`runtime/`) isn't in git, so it won't run as-is. Either get the packaged **`UpworkProposalStrategist.zip`**, or stage the runtime first: on **Windows** double-click `scripts\prepare_bundle.bat`, on **Mac/Linux** run `bash scripts/prepare_bundle.sh`. End users/clients should always receive the **zip**, not the GitHub download.

@@ -92,9 +92,14 @@ exit /b 0
 echo(
 echo [setup] ********************************************************
 echo [setup]  THE APP'S RUNTIME FILES ARE MISSING (runtime\python.exe).
-echo [setup]  This usually means the folder was not fully unzipped, or
-echo [setup]  antivirus removed files. Re-download / fully extract the
-echo [setup]  whole folder and allow it, then launch again.
+echo(
+echo [setup]  - If you opened this as a ZIP: it was not fully unzipped,
+echo [setup]    or antivirus removed files. Re-extract the WHOLE folder
+echo [setup]    ("Extract All"), allow it in antivirus, then launch again.
+echo(
+echo [setup]  - If you downloaded the SOURCE from GitHub: that download has
+echo [setup]    no bundled Python. Double-click  scripts\prepare_bundle.bat
+echo [setup]    once to fetch it, then launch again.
 echo [setup] ********************************************************
 popd
 exit /b 1

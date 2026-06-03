@@ -79,7 +79,8 @@ executed on macOS).
 | `app/paths.py` | The ONE path helper. `resource_base()` (bundled resources, MEIPASS-aware), `state_dir()`/`user_state_dir()` (writable `%APPDATA%`), `is_packaged()`/`is_frozen()`. |
 | `app/config.py` | Derives `PROJECT_ROOT`, `STATE_DIR`, `ENV_PATH`, `LOG_DIR` from `app.paths`. |
 | `desktop_app.py` | The launcher: free port, in-process headless Streamlit, health-gated browser open, foreground serve. Sets `UPS_PACKAGED=1`. |
-| `scripts\prepare_bundle.sh` | Dev/Mac: stage the embeddable Python + `get-pip.py` into `runtime\` before zipping. |
+| `scripts\prepare_bundle.sh` | Dev/**macOS/Linux**: stage the embeddable Python + `get-pip.py` into `runtime\` before zipping. |
+| `scripts\prepare_bundle.bat` | Dev/**Windows**: same, for running a repo clone directly on Windows (downloads via PowerShell). |
 | `scripts\ensure_runtime.bat` | First-run: enable site-packages, install pip, pip-install the libraries. |
 | `scripts\run.bat` | Set `UPS_PACKAGED=1`, ensure runtime, then run in the foreground (normal or `debug`). |
 | `Start Upwork Proposal Strategist.bat` | Primary launcher (opens the browser; the console is the run indicator). |
@@ -147,6 +148,15 @@ PyPI (internet needed once), then the app opens in their browser.
 > Lower-level helper: `scripts/prepare_bundle.sh` only stages `runtime\` (the
 > bundled Python + `get-pip.py`) — `package.sh` calls it for you. `runtime\` is
 > git-ignored, so it is re-staged on a fresh checkout.
+
+> ⚠️ **The GitHub repo is source-only and is NOT directly runnable.** `runtime\`
+> (the bundled Python) is git-ignored, so a `git clone` / "Download ZIP" has no
+> `python.exe`, and the launcher reports *"runtime files are missing"*. To run
+> from a repo checkout, stage the runtime first: **macOS/Linux** →
+> `bash scripts/prepare_bundle.sh`; **Windows** → double-click
+> `scripts\prepare_bundle.bat`. **End users/clients must always receive the
+> packaged `UpworkProposalStrategist.zip`** (it contains `runtime\`), never the
+> GitHub download.
 
 To give it a real icon, create a Windows shortcut to
 `Start Upwork Proposal Strategist.bat`, set its icon to `build_assets\app.ico`,
