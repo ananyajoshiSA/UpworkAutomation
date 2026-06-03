@@ -1,0 +1,32 @@
+.env
+.env.*
+!.env.example
+.env.tmp
+.venv
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+logs/
+*.db
+*.sqlite
+.DS_Store
+
+# Self-contained desktop runtime, created on first launch (embeddable Python +
+# installed deps). Never committed — the zero-touch bootstrap rebuilds it.
+runtime/
+
+# Packaging / build outputs
+build/
+dist/
+.venv-build/
+*.egg-info/
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Personal sample dossier files (PII) — only the template is committed
+sample_dossier/*
+!sample_dossier/TEMPLATE_dossier.json

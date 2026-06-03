@@ -1,0 +1,46 @@
+# Packaging metadata for the Upwork Proposal Strategist.
+#
+# Purpose: make the project a PROPER importable package so the app runs with
+# NO manual PYTHONPATH. After `pip install -e .` the `app` package and the
+# `desktop_app` launcher import from anywhere.
+#
+# Dependencies are intentionally NOT duplicated here. The pinned, single source
+# of truth is requirements.txt (runtime) + requirements-windows.txt (desktop
+# extras), which is what the zero-touch first-run bootstrap installs in one
+# pass. Declaring them again here would invite drift. The optional extras below
+# only mirror the small desktop/build add-ons for developer convenience.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "upwork-proposal-strategist"
+version = "1.0.0"
+description = "Local-first desktop app that scores Upwork jobs against your dossier and drafts grounded proposals."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []  # see requirements.txt / requirements-windows.txt (pinned)
+
+[project.optional-dependencies]
+# `pip install -e ".[desktop]"` — adds the native desktop-window stack.
+# Mirrors requirements-windows.txt (keep in sync).
+desktop = [
+    "pywebview>=5.1,<6",
+    "pythonnet>=3.0.3,<3.1",
+]
+
+[project.scripts]
+# Lets a developer launch the desktop window with a bare `upwork-strategist`.
+upwork-strategist = "desktop_app:main"
+
+[tool.setuptools]
+# desktop_app.py lives at the repo root as a single module (the launcher).
+py-modules = ["desktop_app"]
+
+[tool.setuptools.packages.find]
+# Ship the application package (and its subpackages); leave tests out.
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

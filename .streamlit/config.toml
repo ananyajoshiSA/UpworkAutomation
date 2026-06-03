@@ -1,0 +1,29 @@
+# Clean, professional light theme for the Upwork Proposal Strategist.
+# These options are long-standing and safe across Streamlit versions.
+
+[theme]
+base = "light"
+primaryColor = "#2563EB"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F6F8"
+textColor = "#1E2A38"
+
+[client]
+toolbarMode = "minimal"
+
+# --- Local development server settings -------------------------------------
+# LOCAL DEVELOPMENT ONLY — review before any public/shared deployment.
+#
+# A browser-side "AxiosError: Request failed with status code 403" when
+# uploading a screenshot is almost always Streamlit's XSRF/CORS check
+# rejecting the file-upload POST in a local or proxied setup. The file shows
+# in the uploader but the bytes never reach the server, so "Extract Job
+# Details" stays disabled. Disabling those two checks for local dev makes
+# st.file_uploader work reliably.
+#
+# Before deploying publicly: re-enable enableXsrfProtection (and set
+# enableCORS appropriately for your host) so uploads stay protected.
+[server]
+maxUploadSize = 20            # max screenshot upload size, in MB
+enableCORS = false            # local dev only
+enableXsrfProtection = false  # local dev only — clears 403 upload errors

@@ -1,0 +1,126 @@
+{
+  "name": "",
+  "title": "",
+  "location": "",
+  "timezone": "",
+  "languages": [],
+  "linkedin_url": "",
+  "upwork_url": "",
+
+  "selected_offer": "",
+  "guarantee": "",
+
+  "target_client": {
+    "type": "",
+    "industries": [],
+    "revenue_range": "",
+    "platforms": [],
+    "ad_spend": "",
+    "pain_points": []
+  },
+
+  "skills": [
+    {
+      "name": "",
+      "level": "Beginner / Intermediate / Expert",
+      "years": 0,
+      "note": ""
+    }
+  ],
+
+  "tools": [],
+
+  "hourly_rate": {
+    "min": 0,
+    "max": 0,
+    "currency": "USD",
+    "note": ""
+  },
+  "fixed_rate_range": {
+    "min": 0,
+    "max": 0,
+    "currency": "USD",
+    "note": ""
+  },
+
+  "service_stack": {
+    "tier_1": {
+      "name": "",
+      "type": "One-time engagement",
+      "price_inr": "",
+      "price_usd": "",
+      "includes": [],
+      "note": ""
+    },
+    "tier_2": {
+      "name": "",
+      "type": "Monthly retainer",
+      "price_inr": "",
+      "price_usd": "",
+      "includes": []
+    },
+    "tier_3": {
+      "name": "",
+      "type": "Premium retainer",
+      "price_inr": "",
+      "price_usd": "",
+      "includes": []
+    }
+  },
+
+  "deliverables": [],
+
+  "work_history": [
+    {
+      "title": "",
+      "company": "",
+      "duration": "",
+      "location": "",
+      "description": "",
+      "tech": ""
+    }
+  ],
+
+  "upwork_stats": {
+    "job_success_score": null,
+    "total_earnings": "",
+    "completed_jobs": 0,
+    "top_rated": false,
+    "note": ""
+  },
+
+  "education": [
+    {
+      "degree": "",
+      "institution": "",
+      "year": null,
+      "note": ""
+    }
+  ],
+
+  "certifications": [],
+
+  "portfolio": [],
+
+  "achievements": [],
+
+  "strengths": [],
+
+  "weaknesses_to_account_for": [],
+
+  "proposal_preferences": {
+    "tone": "",
+    "always_mention": [],
+    "never_say": [],
+    "max_words": 200,
+    "signature_name": "",
+    "proposal_rules": []
+  },
+
+  "metadata": {
+    "created_at": "",
+    "source_files": [],
+    "income_target": "",
+    "90_day_goal": ""
+  }
+}

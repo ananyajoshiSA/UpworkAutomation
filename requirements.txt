@@ -1,0 +1,40 @@
+# Upwork Proposal Strategist — direct dependencies.
+#
+# This is a curated list of the packages the app actually imports, not a
+# full `pip freeze` of the environment. Pins reflect versions verified to
+# work together; transitive dependencies are resolved by pip. Heavy
+# transitive packages that the app never imports (pandas, numpy, GitPython,
+# google-api-python-client, …) are intentionally NOT listed here — they were
+# previously frozen in by mistake and only bloated install.
+
+# --- Core runtime (always required) ---
+streamlit==1.55.0
+pydantic==2.12.5
+python-dotenv==1.2.2
+
+# --- Optional UI: clipboard paste on the Job Screenshot screen ---
+# Lets a user paste a copied screenshot directly into the app. The screen
+# degrades gracefully to drag-drop/browse if this is absent (the import is
+# guarded), so it is safe to omit. Pulls in Pillow as a dependency.
+streamlit-paste-button==0.1.2
+
+# --- Dossier file parsing ---
+pdfplumber==0.11.9
+python-docx==1.2.0
+
+# --- LLM providers ---
+# OpenAI is always installed: it is the default provider AND the
+# OpenAI-compatible fallback client used to talk to Groq when the optional
+# `groq` SDK is absent.
+openai==2.37.0
+# Anthropic provider.
+anthropic==0.103.1
+# Gemini provider (Google AI).
+google-generativeai==0.8.6
+# Optional: the official Groq SDK. The app works without it (it falls back
+# to the openai client against Groq's compatibility endpoint), so it is
+# left commented to keep the install lean. Uncomment to use the native SDK.
+# groq==0.11.0
+
+# --- Tests ---
+pytest==9.0.3

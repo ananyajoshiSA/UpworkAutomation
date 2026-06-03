@@ -1,0 +1,15 @@
+# Windows desktop dependencies — installed IN ADDITION to the app's runtime
+# requirements. The zero-touch first-run bootstrap installs THIS file (it pulls
+# in requirements.txt via the line below), so it's the single set the desktop
+# window needs.
+#
+# Manual install (developers):
+#     pip install -r requirements-windows.txt
+
+-r requirements.txt
+
+# Native desktop window. On Windows, pywebview renders with the Edge WebView2
+# (Chromium) backend, which talks to .NET via pythonnet — hence both pins. The
+# WebView2 *runtime* is part of modern Windows 10/11; it is not a pip package.
+pywebview>=5.1,<6
+pythonnet>=3.0.3,<3.1
