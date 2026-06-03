@@ -8,8 +8,10 @@
 
 ## Open the app
 
-- Open the app folder and **double-click `Start UpworkProposalStrategist`** (or its Desktop shortcut, if you made one).
-- A **"Starting up…"** screen shows for a few seconds, then the app window opens.
+- Open the app folder and **double-click `Start Upwork Proposal Strategist`** (or its Desktop shortcut, if you made one).
+- A small status window opens, then the app appears in your **web browser** after a few seconds. Leave that status window open while you use the app.
+
+> 🔒 **Tip:** If Windows ever shows a firewall box about **"python"**, click **Allow access** — it's safe (the app only uses your own computer). Clicking Cancel works too.
 
 > ℹ️ **Note:** The five pages are on the **left**: **Setup**, **Dossier**, **Job Screenshot**, **Analysis**, **Proposal**. They unlock in order (🔒 is normal).
 
@@ -52,7 +54,7 @@ Your AI key is saved from last time, so you can usually skip straight to step 2.
 
 ## When you're done
 
-- Just **close the app window** (✕). Nothing else to stop.
+- Close the small **status window** that opened with the app (the one that says it's running). That quits the app. You can also close the browser tab.
 
 > 💡 **Tip:** Never share your API key or your `.env` file. See **Safe Practices** in `FIRST_TIME_SETUP_GUIDE.md`.
 
@@ -60,4 +62,4 @@ Your AI key is saved from last time, so you can usually skip straight to step 2.
 
 ## Mac, or running from source?
 
-This is for the Windows app. To run from the source code (Mac/Linux or developers), see **[../DEVELOPER.md](../DEVELOPER.md)** — no conda or PYTHONPATH needed. The 4 steps above are the same once the window is open.
+This is for the Windows app. To run from the source code (Mac/Linux or developers), see **[../DEVELOPER.md](../DEVELOPER.md)** — no conda or PYTHONPATH needed. The 4 steps above are the same once the app is open in your browser.

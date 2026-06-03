@@ -2,7 +2,7 @@
 
 This guide is for people who have **never** done anything like this before. That's okay. Just follow the steps in order. Do one, then go to the next.
 
-The main way to use this tool is the **Windows desktop app**: you **double-click one file** and it opens in its own window. The very first time, it sets itself up automatically (one time, a few minutes). **No terminal. No Python. No conda. No setup commands.**
+The main way to use this tool is the **Windows app**: you **double-click one file** and it opens in your **web browser**. The very first time, it sets itself up automatically (one time, a few minutes, needs internet). **No terminal. No installing anything yourself. No setup commands.**
 
 > 💡 **Tip:** Do not skip steps. Do them top to bottom: 1, 2, 3…
 
@@ -63,7 +63,7 @@ A short checklist. The guide shows you how to get each one.
 - [ ] **Internet** (Wi-Fi or cable) — needed the first time so the app can set itself up.
 - [ ] **An API key** — a secret password for an AI service. You get one in **Step 3**.
 
-> ℹ️ **Note:** You do **not** need to install Python, conda, or a terminal. The app sets up everything it needs by itself, the first time you open it.
+> ℹ️ **Note:** You do **not** need to install Python or open a terminal. The app sets up everything it needs by itself, the first time you open it.
 
 ---
 
@@ -72,20 +72,22 @@ A short checklist. The guide shows you how to get each one.
 **Do this:**
 
 1. If you were sent a **ZIP**, right-click it → **Extract All…** → **Extract**. You now have a folder (for example `UpworkProposalStrategist`).
-2. Open that folder and **double-click** the file named **`Start UpworkProposalStrategist`**.
-3. Windows may show a blue box (**"Windows protected your PC"**) or ask about running a script. This is normal for a new app.
-   - Click **More info**, then **Run anyway** (or allow/open the script).
-4. A window appears that says it's doing a **one-time setup**. It works for a few minutes. **Leave it alone until it finishes** — it's downloading and installing everything the app needs, just this once.
+2. Open that folder and **double-click** the file named **`Start Upwork Proposal Strategist`**.
+3. Windows may show a blue box (**"Windows protected your PC"**). This is normal for a new app that isn't signed yet.
+   - Click **More info**, then **Run anyway**.
+4. A small **black setup window** appears and says it's doing a **one-time setup**. It works for a few minutes. **Leave it alone until it finishes** — it's downloading and installing everything the app needs, just this once.
 
-**You should see:** After setup, a **"Starting up…"** screen, then the app opens in its own window on the **Setup** page.
+**You should see:** After setup, the app opens in your **web browser** on the **Setup** page. The small black window stays open behind it — that's normal; leave it open while you use the app.
 
-> ✅ **Success:** The app window is open. Continue to **Step 3**.
+> ✅ **Success:** The app is open in your browser. Continue to **Step 3**.
 
 > 💡 **Tip:** The first time is the slow time (a few minutes, needs internet). Every launch after that takes only a few seconds.
 
+> 🔒 **If Windows asks about the firewall:** A box may appear saying *"Windows Defender Firewall has blocked some features of python."* Click **Allow access** (you can leave **Public networks** unchecked). It's safe — the app only talks to **your own computer**. Even if you click **Cancel**, the app still works.
+
 > ℹ️ **Note:** Five pages run down the **left side**: **Setup**, **Dossier**, **Job Screenshot**, **Analysis**, **Proposal**. A lock (🔒) is normal — each unlocks when you finish the one before it.
 
-> ⚠️ **If a message mentions "WebView2", or the window is blank:** see [Common Problems → App won't open](#common-problems-and-fixes).
+> ⚠️ **If the browser doesn't open on its own:** the black window shows a web address like `http://127.0.0.1:…` — type that into your browser. See [Common Problems → App won't open](#common-problems-and-fixes).
 
 > 📷 *Screenshot placeholder: the "one-time setup" window, then the app on Setup.*
 
@@ -95,12 +97,12 @@ A short checklist. The guide shows you how to get each one.
 
 Next time you want to use the tool:
 
-- Open the app folder and **double-click `Start UpworkProposalStrategist`** again.
-- No setup this time — it opens in a few seconds.
+- Open the app folder and **double-click `Start Upwork Proposal Strategist`** again.
+- No setup this time — it opens in your browser in a few seconds.
 
-> 💡 **Tip:** To make it easier later, right-click **`Start UpworkProposalStrategist`** → **Send to → Desktop (create shortcut)**. Then it's one click from your Desktop.
+> 💡 **Tip:** To make it easier later, right-click **`Start Upwork Proposal Strategist`** → **Send to → Desktop (create shortcut)**. Then it's one click from your Desktop.
 
-> ✅ **Success:** The app window opens. Your AI key from last time is remembered, so you can usually go straight to **Step 5**.
+> ✅ **Success:** The app opens in your browser. Your AI key from last time is remembered, so you can usually go straight to **Step 5**.
 
 ---
 
@@ -293,7 +295,7 @@ The **Proposal** page writes your proposal draft, using only facts from your fil
 
 ## When You're Done
 
-- Just **close the app window** (click the **✕**). That's it — there's nothing else to stop.
+- Close the small **black status window** that opened with the app (the one that says it's running). That quits the app — there's nothing else to stop. You can also close the browser tab.
 - Your AI settings are saved, so next time you only do Steps 5–8.
 
 > 💡 **Tip:** Next time, use the shorter [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md) in this same `docs` folder.
@@ -302,21 +304,25 @@ The **Proposal** page writes your proposal draft, using only facts from your fil
 
 ## Common Problems and Fixes
 
-### App won't open / blank or "WebView2" window
+### Browser didn't open on its own
 
-- The app needs the free **Microsoft Edge WebView2 Runtime**, which is on almost all up-to-date Windows PCs. If a message mentions it:
-  1. Go to `https://developer.microsoft.com/microsoft-edge/webview2/`
-  2. Download and install the **Evergreen Bootstrapper**.
-  3. Open the app again.
-- First launch is just slow (10–30 seconds). Give it a moment before deciding it failed.
+- The small **black window** shows a web address like `http://127.0.0.1:8xxx`. Open your browser (Chrome, Edge, Firefox…) and type that address into the bar.
+- The **first** launch is just slow (it's installing — give it a few minutes, and make sure you have internet that first time). Later launches take only seconds.
+- If you closed the black window, the app stops. Double-click **`Start Upwork Proposal Strategist`** again to reopen it.
 
-### "Windows protected your PC" / a script warning
+### "Windows protected your PC"
 
-- Expected for a new app that isn't signed yet. Click **More info → Run anyway** (or allow the script). It is safe.
+- Expected for a new app that isn't signed yet. Click **More info → Run anyway**. It is safe.
+
+### A "Windows Firewall" box about "python"
+
+- Normal on the first run. To show its pages in your browser, the app runs a tiny server on **your own computer** — Windows just wants you to okay it. Click **Allow access** (you can leave **Public networks** unchecked).
+- It's safe: nothing is opened to the internet. The server only listens on your own machine (`127.0.0.1`), so even if you click **Cancel**, the app keeps working.
 
 ### Double-clicking does nothing / the launcher is blocked
 
-- Some PCs block `.vbs` files. Open the app folder, go into the **`scripts`** folder, and double-click **`run.bat`** instead — it does exactly the same thing (it just shows a small black window while it works).
+- If antivirus blocked the launcher, open the app folder, go into the **`scripts`** folder, and double-click **`run.bat`** instead — it does exactly the same thing.
+- If files seem to be missing, your antivirus may have removed them. Re-download the folder, **allow** it when prompted, and fully **Extract All** before opening.
 
 ### API not working
 
@@ -338,7 +344,7 @@ The **Proposal** page writes your proposal draft, using only facts from your fil
 
 ### Start over completely
 
-- Close the app, then delete the folder `%APPDATA%\UpworkProposalStrategist\` (this removes your saved key and logs). Open the app again to set up fresh.
+- Close the app. Then open **File Explorer**, click the address bar at the top, type `%APPDATA%\UpworkProposalStrategist` and press **Enter** — it opens the app's private folder. Delete that folder (this removes your saved key and logs). Open the app again to set up fresh.
 
 ---
 
@@ -366,6 +372,6 @@ The **Proposal** page writes your proposal draft, using only facts from your fil
 
 ## Mac, or Running From Source
 
-This guide is for the **Windows app**. If you're on a **Mac/Linux**, or you're a developer who wants to run the project's source code, see **[DEVELOPER.md](../DEVELOPER.md)**. It explains how to start the app (no conda and no PYTHONPATH needed). Once the window is open, the in-app steps **3–8 above are identical**.
+This guide is for the **Windows app**. If you're on a **Mac/Linux**, or you're a developer who wants to run the project's source code, see **[DEVELOPER.md](../DEVELOPER.md)**. It explains how to start the app (no conda and no PYTHONPATH needed). Once the app is open in your browser, the in-app steps **3–8 above are identical**.
 
 > ℹ️ **Note (for whoever hands this out):** To package it so end users just double-click, see [DEVELOPER.md](../DEVELOPER.md).

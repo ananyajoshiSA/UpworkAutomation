@@ -1,11 +1,11 @@
 """Upwork Proposal Strategist — Streamlit entry point.
 
 End users never run this directly — they double-click the launcher (see
-README), which starts the desktop window. Developers launch it via
-``python desktop_app.py`` (the desktop window) or, after ``pip install -e .``,
-``python -m streamlit run app/main.py`` — no PYTHONPATH needed in either case,
-because the project is an installable package and the launcher puts the project
-root on ``sys.path``. See DEVELOPER.md.
+README), which opens the app in their web browser. Developers launch it via
+``python desktop_app.py`` (same thing — starts the server and opens the browser)
+or, after ``pip install -e .``, ``python -m streamlit run app/main.py`` — no
+PYTHONPATH needed in either case, because the project is an installable package
+and the launcher puts the project root on ``sys.path``. See DEVELOPER.md.
 """
 
 from __future__ import annotations

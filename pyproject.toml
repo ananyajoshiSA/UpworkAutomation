@@ -5,10 +5,9 @@
 # `desktop_app` launcher import from anywhere.
 #
 # Dependencies are intentionally NOT duplicated here. The pinned, single source
-# of truth is requirements.txt (runtime) + requirements-windows.txt (desktop
-# extras), which is what the zero-touch first-run bootstrap installs in one
-# pass. Declaring them again here would invite drift. The optional extras below
-# only mirror the small desktop/build add-ons for developer convenience.
+# of truth is requirements.txt, which is what the first-run bootstrap installs.
+# Declaring them again here would invite drift. The app runs in the browser, so
+# there is no native-window dependency stack to mirror.
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -20,18 +19,10 @@ version = "1.0.0"
 description = "Local-first desktop app that scores Upwork jobs against your dossier and drafts grounded proposals."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []  # see requirements.txt / requirements-windows.txt (pinned)
-
-[project.optional-dependencies]
-# `pip install -e ".[desktop]"` — adds the native desktop-window stack.
-# Mirrors requirements-windows.txt (keep in sync).
-desktop = [
-    "pywebview>=5.1,<6",
-    "pythonnet>=3.0.3,<3.1",
-]
+dependencies = []  # see requirements.txt (pinned, single source of truth)
 
 [project.scripts]
-# Lets a developer launch the desktop window with a bare `upwork-strategist`.
+# Lets a developer launch the app (browser) with a bare `upwork-strategist`.
 upwork-strategist = "desktop_app:main"
 
 [tool.setuptools]

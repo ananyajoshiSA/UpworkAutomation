@@ -14,7 +14,6 @@ required UI step):
   sent to the configured LLM API.
 - Raw dossier text, screenshot bytes, generated proposals, and API
   keys are never logged.
-- Nothing inside the ``knowledgebase/`` folder is modified.
 
 Secret-safety: the API-key field is masked, the saved key is shown only as a
 ``sk-****abcd`` mask (never prefilled or echoed), and the short, actionable

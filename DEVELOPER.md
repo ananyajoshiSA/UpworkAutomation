@@ -1,46 +1,54 @@
 # Developer & Packaging Guide
 
 Everything technical lives here. **End users need none of it** — they double-click
-`Start UpworkProposalStrategist` (see [README.md](README.md)). This document
-covers how the zero-touch design works, how to run from source, and how to
+`Start Upwork Proposal Strategist` (see [README.md](README.md)). This document
+covers how the browser-app design works, how to run from source, and how to
 build/distribute.
 
 ---
 
-## 1. How zero-touch works (architecture)
+## 1. How it works (architecture)
 
-The goal: a non-technical Windows user double-clicks **one** thing and gets a
-working desktop app, with **nothing pre-installed** — no Python, conda, pip,
-PYTHONPATH, or env vars, ever.
+The goal: a non-technical Windows user double-clicks **one** thing and the app
+opens in their **web browser**, with **nothing pre-installed** — no Python,
+conda, pip, PYTHONPATH, or env vars, ever.
+
+Python travels *inside* the folder (staged by `scripts\prepare_bundle.sh` before
+you zip), so the client never downloads an interpreter — only the app's
+libraries, from PyPI, on the first run.
 
 ```
-Start UpworkProposalStrategist.vbs        ← user double-clicks (no console)
-  └─ scripts\run.bat                       ← sets UPS_PACKAGED=1, then…
-       ├─ scripts\ensure_runtime.bat       ← FIRST RUN ONLY: builds runtime\
-       │     1. download embeddable Python 3.11 (python.org) → runtime\
+Start Upwork Proposal Strategist.bat       ← user double-clicks (console = "running" light)
+  └─ scripts\run.bat                        ← sets UPS_PACKAGED=1, then…
+       ├─ scripts\ensure_runtime.bat        ← FIRST RUN ONLY:
+       │     1. (Python is already in runtime\ — bundled, not downloaded)
        │     2. enable site-packages in python311._pth
-       │     3. install pip (get-pip.py)
-       │     4. pip install -r requirements-windows.txt   (base + desktop)
+       │     3. install pip from the bundled get-pip.py
+       │     4. pip install -r requirements.txt   (from PyPI; internet)
        │     5. write runtime\.deps_installed   ← success marker (LAST)
-       └─ runtime\pythonw.exe desktop_app.py  ← launches the desktop window
-             ├─ opens a pywebview (WebView2) window with a splash
-             ├─ starts Streamlit headless on a free 127.0.0.1 port (a child
-             │   process = this same program re-run with a sentinel flag)
-             ├─ waits for the server health endpoint, then loads the app
-             └─ on window close, terminates the Streamlit child (no orphans)
+       └─ runtime\python.exe desktop_app.py  ← runs in the FOREGROUND (this console)
+             ├─ picks a free 127.0.0.1 port; starts Streamlit headless, in-process
+             ├─ a daemon thread waits for /_stcore/health, then opens the browser
+             └─ closing the console window stops the server (one process; no orphan)
 ```
 
 Key properties:
 
-- **Self-contained runtime.** The interpreter and all dependencies live in
-  `runtime\` inside the project folder. Created once, reused forever.
+- **Bundled interpreter, libraries on first run.** `runtime\python.exe` ships
+  inside the folder; `ensure_runtime.bat` only installs the Python libraries
+  (once). There is **no "download an interpreter from the web" step** — that
+  download-then-execute pattern is what antivirus/SmartScreen flags. The old
+  `pywebview` / `pythonnet` / WebView2 stack is gone: the UI is just the browser.
 - **Idempotent + self-healing setup.** `ensure_runtime.bat` writes its success
   marker (`runtime\.deps_installed`) **only after every step succeeds**, so an
   interrupted/failed first run leaves no marker and simply resumes on the next
   launch. A completed setup is an instant no-op.
+- **Single process, clean shutdown.** `desktop_app.py` *is* the Streamlit server
+  (its stable CLI is driven in-process) and runs in the foreground. Closing the
+  console window stops it — nothing to taskkill, no orphaned `python.exe`.
 - **No PYTHONPATH.** The project is a proper installable package
   (`pyproject.toml`), and the launcher (`desktop_app.py`) puts the project root
-  on `sys.path` for the Streamlit child. Imports work as a package either way.
+  on `sys.path` before handing off to Streamlit.
 - **Writable state is outside the folder.** The API-key `.env` and logs live in
   `%APPDATA%\UpworkProposalStrategist\`, so the install folder can be read-only
   and can be moved/renamed without losing settings. See `app/paths.py`.
@@ -56,8 +64,13 @@ it's the lightest way to get "nothing pre-installed." The one quirk it requires 
 enabling `site` / `Lib\site-packages` via the `._pth` file so pip-installed
 packages import — is handled deterministically in `ensure_runtime.bat`.
 
-> Internet is needed on the **first** run (to fetch Python + dependency wheels).
-> See [Offline / air-gapped install](#5-offline--air-gapped-install) to avoid it.
+`scripts\prepare_bundle.sh` stages this interpreter into `runtime\` from your Mac
+(it just downloads and unzips the Windows build and `get-pip.py`; nothing is
+executed on macOS).
+
+> Internet is needed on the **first** run only, to fetch the dependency wheels
+> from PyPI. Python itself is bundled. See [Offline / air-gapped
+> install](#4-offline--air-gapped-install) to remove the first-run download too.
 
 ### The path/runtime/state helpers (load-bearing)
 
@@ -65,11 +78,12 @@ packages import — is handled deterministically in `ensure_runtime.bat`.
 |------|------|
 | `app/paths.py` | The ONE path helper. `resource_base()` (bundled resources, MEIPASS-aware), `state_dir()`/`user_state_dir()` (writable `%APPDATA%`), `is_packaged()`/`is_frozen()`. |
 | `app/config.py` | Derives `PROJECT_ROOT`, `STATE_DIR`, `ENV_PATH`, `LOG_DIR` from `app.paths`. |
-| `desktop_app.py` | The launcher: free port, Streamlit child (one re-exec code path for dev + frozen), health-gated splash, WebView2 window, clean shutdown. Sets `UPS_PACKAGED=1`. |
-| `scripts\ensure_runtime.bat` | First-run embeddable-Python + deps bootstrap. |
-| `scripts\run.bat` | Ensure runtime, then launch (normal or `debug`). |
-| `Start UpworkProposalStrategist.vbs` | Primary no-console launcher. |
-| `Start UpworkProposalStrategist (Debug).bat` | Console + logs for troubleshooting. |
+| `desktop_app.py` | The launcher: free port, in-process headless Streamlit, health-gated browser open, foreground serve. Sets `UPS_PACKAGED=1`. |
+| `scripts\prepare_bundle.sh` | Dev/Mac: stage the embeddable Python + `get-pip.py` into `runtime\` before zipping. |
+| `scripts\ensure_runtime.bat` | First-run: enable site-packages, install pip, pip-install the libraries. |
+| `scripts\run.bat` | Set `UPS_PACKAGED=1`, ensure runtime, then run in the foreground (normal or `debug`). |
+| `Start Upwork Proposal Strategist.bat` | Primary launcher (opens the browser; the console is the run indicator). |
+| `Start Upwork Proposal Strategist (Debug).bat` | Same app, with full logs for troubleshooting. |
 
 `UPS_PACKAGED=1` is how a non-frozen embeddable run still gets per-user state:
 `run.bat` and `desktop_app.py` set it; `app.paths.is_packaged()` honours it
@@ -80,27 +94,26 @@ the repo root, so tests and local dev are unaffected.
 
 ## 2. Run from source (developers)
 
-No PYTHONPATH needed anymore. Pick either launch style.
+No PYTHONPATH needed. Pick either launch style.
 
 ```bash
-# Install runtime + desktop deps (one pass; requirements-windows.txt pulls in
-# requirements.txt). Optionally also register the package for clean imports.
-pip install -r requirements-windows.txt
+# Install the libraries.
+pip install -r requirements.txt
 pip install -e .            # optional: `import app...` from anywhere + the
                             # `upwork-strategist` console command
 
-# A) Desktop window (what the packaged app runs):
+# A) Exactly what the packaged app runs (opens your default browser):
 python desktop_app.py
-#    ...sets UPS_PACKAGED, so state goes to %APPDATA%. Force dev state with:
+#    ...sets UPS_PACKAGED, so state goes to %APPDATA% (or
+#    ~/.upwork_proposal_strategist on macOS/Linux). Force dev state with:
 #    UPS_PACKAGED=0 python desktop_app.py   (mac/linux)   set UPS_PACKAGED=0   (win)
 
-# B) Plain web page in your browser (state stays in the repo root):
-python -m streamlit run app/main.py        # no PYTHONPATH required
+# B) Plain Streamlit (state stays in the repo root):
+python -m streamlit run app/main.py
 ```
 
-> macOS/Linux: pywebview uses the system WebKit; `pip install pywebview` is
-> enough (no pythonnet). The `requirements-windows.txt` pins
-> (pywebview + pythonnet) target Windows/WebView2.
+There is no longer a separate "native window" vs "browser" mode — both open in
+the browser. `pywebview` and `pythonnet` were removed.
 
 ### Tests
 
@@ -108,57 +121,90 @@ python -m streamlit run app/main.py        # no PYTHONPATH required
 pytest -q
 ```
 
-The suite (389 tests) does not require the desktop deps and runs in dev mode
-(state in the repo root).
+The suite runs in dev mode (state in the repo root) and needs only
+`requirements.txt` — no desktop/GUI packages.
 
 ---
 
-## 3. Distributing the zero-touch folder
+## 3. Distributing the folder
 
-This is the model the refactor delivers — **no build step required**:
+**One command builds a clean, ready-to-send zip:**
 
-1. Zip the project folder (the `runtime/` folder is git-ignored and not
-   included — it's rebuilt on first run).
-2. Send the zip. The user unzips and double-clicks
-   `Start UpworkProposalStrategist`.
+```bash
+bash scripts/package.sh
+```
+
+It stages the bundled Python, copies the project while **excluding your secrets
+and dev junk** (`.env` / API key, `.git`, `.vscode`, `.claude`, caches, `logs`,
+`tests`, your personal `sample_dossier` files), writes
+`dist/UpworkProposalStrategist.zip`, and **aborts if a `.env` ever lands inside**.
+Re-run it after any change.
+
+**Send `dist/UpworkProposalStrategist.zip`.** The user unzips and double-clicks
+`Start Upwork Proposal Strategist`. Their first run installs the libraries from
+PyPI (internet needed once), then the app opens in their browser.
+
+> Lower-level helper: `scripts/prepare_bundle.sh` only stages `runtime\` (the
+> bundled Python + `get-pip.py`) — `package.sh` calls it for you. `runtime\` is
+> git-ignored, so it is re-staged on a fresh checkout.
 
 To give it a real icon, create a Windows shortcut to
-`Start UpworkProposalStrategist.vbs`, set its icon to `build_assets\app.ico`, and
-place that shortcut on the Desktop.
+`Start Upwork Proposal Strategist.bat`, set its icon to `build_assets\app.ico`,
+and place that shortcut on the Desktop.
 
-If `Start UpworkProposalStrategist.vbs` is blocked by antivirus/policy, the user
-can double-click `scripts\run.bat` instead (same behaviour, shows a console).
+If antivirus/policy blocks the launcher, the user can double-click
+`scripts\run.bat` directly (same behaviour).
+
+> **Why this is friendlier to antivirus than the old build:** the previous
+> version used a hidden-launch `.vbs` *and* downloaded a Python interpreter at
+> runtime via PowerShell — both classic malware-heuristic / ASR triggers. This
+> version ships a plain `.bat`, bundles Python (no interpreter download), and
+> only lets `pip` fetch library wheels from PyPI (ordinary, not flagged the same
+> way). Note: unsigned code can still trip SmartScreen ("More info → Run
+> anyway"); the only real cure for that is code-signing, which is out of scope
+> here.
 
 ---
 
 ## 4. Offline / air-gapped install
 
-The first-run bootstrap normally downloads Python + wheels. To make a fully
-offline folder:
+The default already **bundles Python**, so the only thing a client downloads is
+the library wheels on first run. To make the folder **fully offline** (no
+internet even on the first run):
 
-1. **Bundle Python:** download `python-3.11.9-embed-amd64.zip` and place it at
-   `runtime\python-embed.zip` (the bootstrap uses it instead of downloading).
-2. **Bundle wheels:** on a machine with internet,
-   `pip download -r requirements-windows.txt -d wheelhouse\`, ship the
-   `wheelhouse\` folder, and change the install line in
-   `scripts\ensure_runtime.bat` to
-   `pip install --no-index --find-links "%ROOT%\wheelhouse" -r "%REQ%"`.
-3. Also bundle `get-pip.py` at `runtime\get-pip.py`.
+1. **Bundle wheels:** on a machine with internet,
+   `pip download -r requirements.txt -d wheelhouse\` (from a Mac, add
+   `--platform win_amd64 --python-version 311 --only-binary=:all:` to fetch the
+   Windows wheels), ship the `wheelhouse\` folder, and change the install line in
+   `scripts\ensure_runtime.bat` to:
+   `"%PYEXE%" -m pip install --no-index --find-links "%ROOT%\wheelhouse" -r "%REQ%"`
+2. Python and `get-pip.py` are already staged by `scripts\prepare_bundle.sh`, so
+   nothing else is needed.
 
 ---
 
-## 5. Section-A findings note (from the refactor)
+## 5. Design notes
 
+- **Browser, not a native window.** The app opens in the default browser instead
+  of a pywebview/WebView2 window; `pywebview` + `pythonnet` were removed (fewer
+  moving parts, and `pythonnet`'s .NET interop was itself an extra antivirus
+  trigger). `127.0.0.1` is a browser "secure context", so clipboard paste on the
+  Job Screenshot screen still works; the file-upload control is the always-on
+  fallback. The console window is both the "running" indicator and the
+  clean-shutdown mechanism — close it and the single server process stops.
+  Streamlit binds to `127.0.0.1` **only** (verified with `lsof`: `TCP
+  127.0.0.1:<port> (LISTEN)`), so no network-facing port is ever exposed. A
+  first-run Windows Defender Firewall prompt for `python.exe` is therefore
+  harmless — a loopback listener works whether the user clicks **Allow access**
+  or **Cancel**. There is no clean non-admin way to suppress the prompt, so the
+  user docs just reassure (click Allow). Don't change the bind to `0.0.0.0`.
 - **PYTHONPATH dependence** was only in the *launch invocation* — the package is
   well-formed (`__init__.py` throughout, absolute `app.x` imports). Fixed by
   `pyproject.toml` (installable package) + the launcher's `sys.path` injection.
-- **conda** appeared only in docs; no code dependence. Removed from user docs.
+- **conda** appeared only in docs; no code dependence.
 - **Writable state** previously redirected to `%APPDATA%` only when
   `sys.frozen`; the embeddable run isn't frozen, so it would have written into
   the folder. Fixed with the `UPS_PACKAGED` packaged-mode flag.
-- **Resource paths** had two helpers and no app code reads bundled data files by
-  path (provider-models/skills are pure Python). Unified into `app/paths.py`.
-- **No prior `pyproject.toml`** or packaging metadata existed.
 - **Runtime decision:** embeddable Python (reasoning in §1).
 
 ---
@@ -166,24 +212,24 @@ offline folder:
 ## 6. Verification checklist
 
 Items marked ✅ were verified on this (macOS) dev box; items marked 🪟 are
-Windows-only and must be checked on a clean Windows machine (the `.bat`/`.vbs`
-bootstrap and the WebView2 window can't run on macOS).
+Windows-only and must be checked on a clean Windows machine (the `.bat`
+bootstrap and the bundled `python.exe` can't run on macOS).
 
 | # | Check | Status |
 |---|-------|--------|
-| 1 | Fresh Windows, no Python/conda: double-click → one-time setup w/ feedback → window opens | 🪟 |
-| 2 | Second double-click: no reinstall, launches in seconds (marker fast-path) | 🪟 |
+| 1 | Fresh Windows, no Python: double-click → one-time library install w/ feedback → browser opens | 🪟 |
+| 2 | Second double-click: no reinstall, opens in seconds (marker fast-path) | 🪟 |
 | 3 | Runs with NO manual PYTHONPATH (imports as a package) | ✅ `pip install -e .` + import from `/tmp` |
 | 4 | Spaces in path, and moving the whole folder, still work | ✅ paths resolved from file locations; 🪟 end-to-end |
 | 5 | Setup saves API config to `%APPDATA%\...` and persists across restarts/moves | ✅ bootstrap + packaged-gate tests |
 | 6 | Bundled data files load in the relocated/bundled runtime | ✅ no path-based data reads; resources via `resource_base()` |
-| 7 | Clipboard paste + dossier picker work via the launcher | 🪟 (paste = WebView2 secure-context; upload fallback ✅) |
-| 8 | No console on normal run; debug launcher shows logs | 🪟 (`.vbs` style 0 hidden; `(Debug).bat` + `UPS_DEBUG`) |
-| 9 | Closing the window leaves no orphan python.exe | ✅ boot harness (server killed); 🪟 exact taskkill |
+| 7 | Clipboard paste + dossier picker work in the browser | 🪟 (paste = 127.0.0.1 secure context; upload fallback ✅) |
+| 8 | Console stays open as the run indicator; debug launcher shows logs | 🪟 (`UPS_DEBUG=1` raises the log level) |
+| 9 | Closing the console leaves no orphan `python.exe` | ✅ single process; 🪟 end-to-end |
 | 10 | Interrupted first-run setup self-heals next double-click | 🪟 (marker written last) |
-| 11 | `SHOW_DEBUG_PANEL` still toggles | ✅ unchanged; 389 tests pass |
-| 12 | README's only user step is the double-click; commands live here | ✅ |
+| 11 | `prepare_bundle.sh` stages `runtime\` (python.exe + get-pip.py) | ✅ runs on macOS |
+| 12 | `SHOW_DEBUG_PANEL` still toggles | ✅ unchanged; tests pass |
 
-To verify the Windows-only items, run `build`-free on a clean VM: copy the
-folder, double-click the launcher, and walk the checklist. Use
-`Start UpworkProposalStrategist (Debug).bat` to see logs if anything fails.
+To verify the Windows-only items, run `build`-free on a clean VM: stage the
+bundle, copy the folder, double-click the launcher, and walk the checklist. Use
+`Start Upwork Proposal Strategist (Debug).bat` to see logs if anything fails.

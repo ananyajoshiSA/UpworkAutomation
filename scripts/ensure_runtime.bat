@@ -1,24 +1,27 @@
 @echo off
 setlocal EnableExtensions
 REM ===========================================================================
-REM  ensure_runtime.bat - first-run setup for the zero-touch desktop app.
+REM  ensure_runtime.bat - first-run setup for the browser desktop app.
 REM
-REM  Installs a PRIVATE, embeddable Python and the app's dependencies into
-REM  .\runtime\ exactly ONCE. The user needs nothing pre-installed.
+REM  Python is BUNDLED inside this folder (runtime\python.exe), staged by
+REM  scripts\prepare_bundle.sh before the folder is zipped. So this step does
+REM  NOT download an interpreter - it only:
+REM    1. enables site-packages in the embeddable interpreter (._pth),
+REM    2. installs pip (from the bundled get-pip.py) if needed,
+REM    3. pip-installs the app's libraries from PyPI - the ONE thing that needs
+REM       internet, and only on the very first run.
 REM
-REM  Idempotent + self-healing:
-REM    * The success marker (.\runtime\.deps_installed) is written ONLY after
-REM      every step succeeds. An interrupted/failed setup leaves NO marker, so
-REM      the next launch simply resumes. Each step also checks "already done".
-REM    * Re-running when fully set up is an instant no-op (fast-path below).
+REM  Deliberately NO PowerShell and NO "download-an-exe-from-the-web" step: that
+REM  download-then-execute pattern is what antivirus/SmartScreen flags. pip
+REM  fetching wheels from PyPI is ordinary and is not flagged the same way.
 REM
-REM  Needs internet on first run (to fetch Python + dependency wheels).
-REM  Offline install: see DEVELOPER.md (pre-place runtime\python-embed.zip and a
-REM  wheelhouse).
+REM  Idempotent + self-healing: the success marker (runtime\.deps_installed) is
+REM  written ONLY after every step succeeds, so an interrupted/failed first run
+REM  leaves NO marker and simply resumes on the next launch. A completed setup
+REM  is an instant no-op (fast path below).
 REM
-REM  NOTE: this is Windows-only and was authored without a Windows host to run
-REM  it on. It follows the well-known embeddable-Python + get-pip recipe; verify
-REM  on a clean Windows box (see the test checklist in DEVELOPER.md).
+REM  NOTE: Windows-only and authored on macOS - verify on a clean Windows box
+REM  (see the checklist in DEVELOPER.md).
 REM ===========================================================================
 
 REM --- Resolve project root (this script lives in <root>\scripts\) -----------
@@ -27,16 +30,12 @@ set "ROOT=%CD%"
 set "RT=%ROOT%\runtime"
 set "MARKER=%RT%\.deps_installed"
 set "PYEXE=%RT%\python.exe"
-set "REQ=%ROOT%\requirements-windows.txt"
+set "REQ=%ROOT%\requirements.txt"
 
-REM Pinned interpreter (embeddable build). Keep PYVER and PTHFILE
-REM (python<major><minor>._pth) in step with each other.
-set "PYVER=3.11.9"
-set "PYZIP=%RT%\python-embed.zip"
+REM Embeddable build is pinned to 3.11 - keep PTHFILE (python<major><minor>._pth)
+REM in step with the Python staged by prepare_bundle.sh.
 set "PTHFILE=%RT%\python311._pth"
-set "PYURL=https://www.python.org/ftp/python/%PYVER%/python-%PYVER%-embed-amd64.zip"
 set "GETPIP=%RT%\get-pip.py"
-set "GETPIPURL=https://bootstrap.pypa.io/get-pip.py"
 
 REM --- Fast path: already fully set up ---------------------------------------
 if exist "%MARKER%" (
@@ -44,28 +43,21 @@ if exist "%MARKER%" (
     exit /b 0
 )
 
+REM --- The bundled runtime must be present -----------------------------------
+REM Python is shipped inside runtime\. If it is missing, the folder was not
+REM fully extracted, the bundle was never staged, or antivirus removed files.
+if not exist "%PYEXE%" goto :noruntime
+
 echo(
 echo ============================================================
 echo   Upwork Proposal Strategist - one-time setup
 echo   This runs ONCE and may take a few minutes. Please wait...
+echo   (It downloads the app's libraries - internet is needed
+echo    this first time only.)
 echo ============================================================
 echo(
 
-if not exist "%RT%" mkdir "%RT%"
-
-REM --- 1. Embeddable Python --------------------------------------------------
-if not exist "%PYEXE%" (
-    if not exist "%PYZIP%" (
-        echo [setup] Downloading Python runtime...
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%PYURL%' -OutFile '%PYZIP%'; exit 0 } catch { Write-Host $_; exit 1 }"
-        if errorlevel 1 goto :fail
-    )
-    echo [setup] Extracting Python runtime...
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Expand-Archive -LiteralPath '%PYZIP%' -DestinationPath '%RT%' -Force; exit 0 } catch { Write-Host $_; exit 1 }"
-    if errorlevel 1 goto :fail
-)
-
-REM --- 2. Enable site-packages in the embeddable interpreter -----------------
+REM --- 1. Enable site-packages in the embeddable interpreter -----------------
 REM Embeddable Python ships with 'import site' disabled and no site-packages on
 REM the path, so pip-installed packages won't import until we re-enable them.
 REM Rewrite the ._pth deterministically (safe to repeat).
@@ -74,31 +66,38 @@ REM Rewrite the ._pth deterministically (safe to repeat).
 >>"%PTHFILE%" echo Lib\site-packages
 >>"%PTHFILE%" echo import site
 
-REM --- 3. pip ----------------------------------------------------------------
+REM --- 2. pip (from the bundled get-pip.py; no web download) -----------------
 "%PYEXE%" -m pip --version >nul 2>&1
 if errorlevel 1 (
-    echo [setup] Installing pip...
-    if not exist "%GETPIP%" (
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%GETPIPURL%' -OutFile '%GETPIP%'; exit 0 } catch { Write-Host $_; exit 1 }"
-        if errorlevel 1 goto :fail
-    )
+    if not exist "%GETPIP%" goto :noruntime
+    echo [setup] Preparing the installer...
     "%PYEXE%" "%GETPIP%" --no-warn-script-location
     if errorlevel 1 goto :fail
 )
 
-REM --- 4. Dependencies (base + desktop extras) in ONE pass -------------------
-REM requirements-windows.txt begins with `-r requirements.txt`, so this single
-REM command installs the full set the desktop window needs.
-echo [setup] Installing app dependencies (this is the slow part)...
+REM --- 3. Dependencies from PyPI in ONE pass ---------------------------------
+REM requirements.txt is the single pinned set the app needs.
+echo [setup] Installing app libraries (this is the slow part)...
 "%PYEXE%" -m pip install --no-warn-script-location --disable-pip-version-check -r "%REQ%"
 if errorlevel 1 goto :fail
 
-REM --- 5. Success marker (written LAST so a failed run self-heals) -----------
-> "%MARKER%" echo installed %DATE% %TIME% python %PYVER%
+REM --- 4. Success marker (written LAST so a failed run self-heals) -----------
+> "%MARKER%" echo installed %DATE% %TIME%
 echo(
 echo [setup] Setup complete.
 popd
 exit /b 0
+
+:noruntime
+echo(
+echo [setup] ********************************************************
+echo [setup]  THE APP'S RUNTIME FILES ARE MISSING (runtime\python.exe).
+echo [setup]  This usually means the folder was not fully unzipped, or
+echo [setup]  antivirus removed files. Re-download / fully extract the
+echo [setup]  whole folder and allow it, then launch again.
+echo [setup] ********************************************************
+popd
+exit /b 1
 
 :fail
 echo(
