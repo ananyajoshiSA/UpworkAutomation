@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from app.config import clear_opportunity_state, get_settings
+from app.config import clear_opportunity_state, get_settings, save_dossier_path
 from app.models.schemas import SOURCE_TYPE_LABELS
 from app.services.dossier_reader import (
     DossierReadSummary,
@@ -329,6 +329,7 @@ def _card_read_evidence() -> None:
                 type="primary",
                 key="continue_to_screenshot_btn",
             ):
+                save_dossier_path(_resolve_dossier_path(result))
                 st.session_state.current_step = "screenshot"
                 st.rerun()
 
@@ -369,6 +370,8 @@ def _continue_chain() -> None:
                 st.session_state.canonical_profile = profile
                 st.session_state.evidence_index_meta = meta
     if st.session_state.get("evidence_index"):
+        # Remember this folder for next launch — only persisted once it worked.
+        save_dossier_path(path)
         st.session_state.current_step = "screenshot"
         st.rerun()
     else:
@@ -424,6 +427,15 @@ def render() -> None:
 
     settings = get_settings()
     debug = bool(getattr(settings, "show_debug_panel", False))
+
+    # Remembered dossier path: seed the text box from the last-used folder
+    # (persisted in .env) once per session, so the user doesn't retype it every
+    # launch. After this first seed the text box owns the value, so the user can
+    # freely change it.
+    if "dossier_folder_path" not in st.session_state:
+        saved_path = (getattr(settings, "dossier_folder_path", None) or "").strip()
+        if saved_path:
+            st.session_state["dossier_folder_path"] = saved_path
 
     st.subheader("Dossier")
     st.write(

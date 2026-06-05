@@ -295,6 +295,9 @@ class Settings:
     # size, evidence count sent, and internal fallback messages. Internal
     # API logging still runs — only the on-screen surface is gated.
     show_debug_panel: bool = False
+    # Last-used dossier folder path. Persisted to .env so the user doesn't
+    # retype it every launch (not a secret).
+    dossier_folder_path: str | None = None
 
     @property
     def active_provider(self) -> str:
@@ -431,6 +434,7 @@ def _load_settings() -> Settings:
             "PROPOSAL_MAX_OUTPUT_TOKENS", _DEFAULT_PROPOSAL_MAX_OUTPUT_TOKENS
         ),
         show_debug_panel=_env_bool("SHOW_DEBUG_PANEL", default=False),
+        dossier_folder_path=_env("DOSSIER_FOLDER_PATH"),
     )
 
 
@@ -739,6 +743,19 @@ def clear_api_keys(*, env_path: Path | None = None) -> Settings:
     updates: dict[str, str] = {name: "" for name in _PROVIDER_API_KEY_ENV}
     update_env_file(updates, env_path=env_path)
     return reload_settings()
+
+
+def save_dossier_path(path: str, *, env_path: Path | None = None) -> None:
+    """Persist the last-used dossier folder path to ``.env`` for next launch.
+
+    Non-secret convenience state: the user points at their dossier folder once
+    and the app pre-fills it on every later launch until they change it. Written
+    via the same managed-``.env`` writer as the API config, so unrelated keys and
+    comments are preserved.
+    """
+    update_env_file(
+        {"DOSSIER_FOLDER_PATH": (path or "").strip()}, env_path=env_path
+    )
 
 
 # Canonical LLM task names. Used by llm_client and the API usage panel so
