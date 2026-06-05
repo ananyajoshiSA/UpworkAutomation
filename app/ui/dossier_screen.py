@@ -428,13 +428,17 @@ def render() -> None:
     settings = get_settings()
     debug = bool(getattr(settings, "show_debug_panel", False))
 
-    # Remembered dossier path: seed the text box from the last-used folder
-    # (persisted in .env) once per session, so the user doesn't retype it every
-    # launch. After this first seed the text box owns the value, so the user can
-    # freely change it.
-    if "dossier_folder_path" not in st.session_state:
+    # Remembered dossier path: the first time this screen renders in a session,
+    # seed the (still-empty) text box from the last-used folder saved in .env so
+    # the user doesn't retype it each launch. main._init_session_state pre-seeds
+    # this key to "", so a plain "not in session_state" check never fires — we
+    # guard with a one-shot flag and only fill when the box is empty, never
+    # overwriting a path the user typed. Runs before the text_input is created.
+    if not st.session_state.get("_dossier_path_seeded"):
+        st.session_state["_dossier_path_seeded"] = True
         saved_path = (getattr(settings, "dossier_folder_path", None) or "").strip()
-        if saved_path:
+        current_path = (st.session_state.get("dossier_folder_path") or "").strip()
+        if saved_path and not current_path:
             st.session_state["dossier_folder_path"] = saved_path
 
     st.subheader("Dossier")

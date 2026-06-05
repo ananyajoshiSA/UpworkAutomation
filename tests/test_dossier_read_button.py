@@ -311,3 +311,51 @@ def test_failed_files_warning_is_clean(tmp_path, monkeypatch):
 
     joined = "\n".join(fake.texts)
     assert "Some files could not be read, but the app continued." in joined
+
+
+# ---------------------------------------------------------------------------
+# Remembered dossier path (pre-fill from the saved last-used folder)
+# ---------------------------------------------------------------------------
+
+
+def _install_with_settings(monkeypatch, fake, settings):
+    """Like ``_install`` but lets the test supply its own ``Settings``."""
+    monkeypatch.setitem(sys.modules, "streamlit", fake)
+    monkeypatch.setattr(dossier_screen, "st", fake, raising=True)
+    monkeypatch.setattr(theme, "st", fake, raising=True)
+    monkeypatch.setattr(dossier_screen, "get_settings", lambda: settings)
+
+
+def test_dossier_path_prefilled_from_saved_setting(monkeypatch):
+    """First render seeds the box from the last-used path even though
+    main._init_session_state has already put an empty string in session state."""
+    fake = FakeStreamlit()
+    fake.session_state["api_ok"] = True
+    fake.session_state["dossier_folder_path"] = ""  # as main() pre-seeds it
+    settings = config.Settings(
+        llm_provider="anthropic",
+        anthropic_api_key="sk-ant-test-key",
+        dossier_folder_path="/Users/me/Saved Dossier",
+    )
+    _install_with_settings(monkeypatch, fake, settings)
+
+    dossier_screen.render()
+
+    assert fake.session_state["dossier_folder_path"] == "/Users/me/Saved Dossier"
+
+
+def test_dossier_path_not_overwritten_when_box_has_value(monkeypatch):
+    """A path already typed in the box is never clobbered by the saved value."""
+    fake = FakeStreamlit()
+    fake.session_state["api_ok"] = True
+    fake.session_state["dossier_folder_path"] = "/Users/me/Typed Now"
+    settings = config.Settings(
+        llm_provider="anthropic",
+        anthropic_api_key="sk-ant-test-key",
+        dossier_folder_path="/Users/me/Old Saved",
+    )
+    _install_with_settings(monkeypatch, fake, settings)
+
+    dossier_screen.render()
+
+    assert fake.session_state["dossier_folder_path"] == "/Users/me/Typed Now"
