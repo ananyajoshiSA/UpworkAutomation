@@ -103,14 +103,6 @@ def _render_proposal(proposal_result: dict, show_debug: bool, *, settings) -> No
                 key="download_proposal_btn",
             )
 
-    missing_info_list = proposal_result.get("flagged_as_missing") or []
-    if missing_info_list:
-        with st.container(border=True):
-            theme.section_label("Add to your dossier")
-            st.caption("Including these would let future proposals say more:")
-            for hint in missing_info_list:
-                st.write(f"- {hint}")
-
     if show_debug:
         _render_debug_panel(proposal_result, settings=settings)
 
